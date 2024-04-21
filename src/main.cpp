@@ -30,7 +30,7 @@ bool init()
         printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
         success = false;
       } else {
-        SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0xFF, 0xFF);
       }
     }
   }
@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
       0x00000000);// alpha
 
     gTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+    SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
 
     if (NULL == gTexture) {
       printf("Failed to load media!\n");
@@ -67,6 +68,10 @@ int main(int argc, char *argv[])
       bool quit = false;
       SDL_Event e;
 
+      float a = 50;
+      float u = 0;
+      float d = 0;
+      float alpha = 0;
       while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
           if (SDL_QUIT == e.type) {
@@ -74,14 +79,44 @@ int main(int argc, char *argv[])
           }
           if (SDL_KEYDOWN == e.type) {
             switch (e.key.keysym.scancode) {
+            case SDL_SCANCODE_Q:
+              alpha -= 3;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              break;
+            case SDL_SCANCODE_E:
+              alpha += 3;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              break;
+            case SDL_SCANCODE_UP:
+              d += 3;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              break;
+            case SDL_SCANCODE_DOWN:
+              d -= 3;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              break;
+            case SDL_SCANCODE_LEFT:
+              u -= 3;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              break;
+            case SDL_SCANCODE_RIGHT:
+              u += 3;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              break;
             case SDL_SCANCODE_KP_PLUS:
-              printf("SDL_SCANCODE_KP_PLUS have been presssed\n");
+              //printf("SDL_SCANCODE_KP_PLUS have been presssed\n");
+              a += 1;
+              SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
               break;
             case SDL_SCANCODE_KP_MINUS:
-              printf("SDL_SCANCODE_KP_MINUS have been presssed\n");
-              break;
-            case SDL_SCANCODE_ESCAPE:
-              quit = true;
+              if (a == 0)
+                continue;
+              else
+              {
+                a -= 1;
+                SDL_FillRect(loadedSurface, NULL, 0x00FFFFFF);
+              }
+              //printf("SDL_SCANCODE_KP_MINUS have been presssed\n");
               break;
             default:
               break;
@@ -90,7 +125,7 @@ int main(int argc, char *argv[])
         }
         SDL_RenderClear(gRenderer);
 
-        draw(loadedSurface);
+        draw(loadedSurface, a, u, d, alpha * 3.14 / 180);
 
         SDL_UpdateTexture(gTexture, NULL, loadedSurface->pixels, loadedSurface->pitch);
         SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);

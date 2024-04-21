@@ -7,12 +7,10 @@
 
 void put_pixel32(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
-  assert(NULL != surface);
-  assert(x < SCREEN_WIDTH);
-  assert(y < SCREEN_HEIGHT);
-
+  if((x > 0 && x < SCREEN_WIDTH) && (y > 0 && y < SCREEN_HEIGHT)){
   Uint32 *pixels = (Uint32 *)surface->pixels;
   pixels[(y * surface->w) + x] = pixel;
+}
 }
 
 Uint32 get_pixel32(SDL_Surface *surface, int x, int y)
@@ -25,28 +23,67 @@ Uint32 get_pixel32(SDL_Surface *surface, int x, int y)
   return pixels[(y * surface->w) + x];
 }
 
-void draw(SDL_Surface *s)
+void draw(SDL_Surface *s, float a, float u, float d, float alpha)
 {
   glm::vec4 Position = glm::vec4(glm::vec3(0.0f), 1.0f);
   glm::mat4 Model = glm::translate(    glm::mat4(1.0f), glm::vec3(1.0f));
   glm::vec4 Transformed = Model * Position;
 
-  // Ваш код
-  // ...
-  for (int i = 30; i < 100; i++)
-    for (int j = 30; j < 100; j++)
-      put_pixel32(s, i, j, 0x00FF0000);
+  //Оси координат
+  for (int i = 0; i < SCREEN_WIDTH; i++)
+    put_pixel32(s, i, SCREEN_HEIGHT / 2, RGB32(105, 105, 105));
 
-  // Формат цвета в HEX коде:
-  //     0x00RRGGBB
-  //  где R: от 00 до FF
-  //      G: от 00 до FF
-  //      B: от 00 до FF
+  for (int j = 0; j < SCREEN_HEIGHT; j++)
+    put_pixel32(s, SCREEN_WIDTH / 2, j, RGB32(105, 105, 105));
 
-  for (int i = 100; i < 200; i++)
-    for (int j = 100; j < 180; j++)
-      put_pixel32(s, i, j, RGB32(0, 255, 0));
+  for (float t = -100; t <= 100; t+=0.001) 
+  {
+    if (t >= -1.43 && t <= -0.7)
+      continue;
 
-  // или использу¤ макрос можно получить код цвета:
-  //   RGB32(0, 255, 0) эквивалентно записи 0x0000FF00
+    //Координаты кривой
+    float x = ((3 * a * t) / (1 + t * t * t));
+    float y = ((3 * a * t * t) / (1 + t * t * t));
+
+    float rotate_x = x * cos(alpha) + y * sin(alpha);
+    float rotate_y = -x * sin(alpha) + y * cos(alpha);
+    x = rotate_x;
+    y = rotate_y;
+    x += u;
+    y += d;
+
+    put_pixel32(s, x + SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - y, RGB32(0, 0, 0));
+  }
+
+  for (float t = -2; t <= 3; t += 0.07)
+  {
+    // Координаты прямой
+    float x = a * t - a;
+    float y = -a * t;
+
+    float rotate_x = x * cos(alpha) + y * sin(alpha);
+    float rotate_y = -x * sin(alpha) + y * cos(alpha);
+    x = rotate_x;
+    y = rotate_y;
+    x += u;
+    y += d;
+
+    put_pixel32(s, x + SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - y, RGB32(0, 0, 255));
+  }
+
+  for (float t = 0; t <= 10; t += 0.01)
+  {
+    //Вершина
+    float x = a/30 * cos(t) + 3*a/2;
+    float y = a/30 * sin(t) + 3*a/2;
+
+    float rotate_x = x * cos(alpha) + y * sin(alpha);
+    float rotate_y = -x * sin(alpha) + y * cos(alpha);
+    x = rotate_x;
+    y = rotate_y;
+    x += u;
+    y += d;
+
+    put_pixel32(s, x + SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - y, RGB32(0, 128, 0));
+  }
 }
